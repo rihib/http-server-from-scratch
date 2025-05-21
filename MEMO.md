@@ -98,3 +98,11 @@ if (inet_aton("127.0.0.1", &addr.sin_addr) == 0) {
 ## `send_all`、`recv_all`
 
 デバイスドライバのバッファやカーネルのバッファの容量に余裕がなければ指定しただけのバイトを送れないor受け取れないので確実に指定しただけのサイズを送信/受信できるようにする。
+
+## シグナル
+
+[PRのコメント](https://github.com/rihib/socket-programming/pull/1#issuecomment-2393623701)
+
+[signal(7) — Linux manual page](https://man7.org/linux/man-pages/man7/signal.7.html)
+
+[システムプログラム（第5回）](https://www.coins.tsukuba.ac.jp/~syspro/2022/lecture5/index.html)

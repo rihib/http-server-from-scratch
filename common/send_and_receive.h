@@ -1,4 +1,6 @@
 #pragma once
 
-int send_all(int s, char *buf, int len);
-int receive_all(int s, char *buf, int len);
+#define INITIAL_BUF_SIZE 1024
+
+int send_all(int sockfd, char *buf);
+int receive_all(int sockfd, char **buf);

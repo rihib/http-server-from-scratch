@@ -1,41 +1,61 @@
+#include "send_and_receive.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 
-int send_all(int s, char *buf, int len) {
-  int sent = 0;
-  while (sent < len) {
-    int n = send(s, buf + sent, len - sent, 0);
-    if (n == -1) {
+int send_all(int sockfd, char *buf) {
+  int total_sent = 0;
+  int len = strlen(buf);
+  while (total_sent < len) {
+    int sent = send(sockfd, buf + total_sent, len - total_sent, 0);
+    if (sent == -1) {
       perror("failed to send");
-      return EXIT_FAILURE;
+      return -1;
     }
-    if (n == 0) {
-      fprintf(stderr, "EOF\n");
-      return sent;
-    }
-    sent += n;
+    total_sent += sent;
   }
-  return sent;
+  return total_sent;
 }
 
-int receive_all(int s, char *buf, int len) {
-  int received = 0;
-  while (received < len) {
-    int n = recv(s, buf + received, len - received, 0);
-    if (n == -1) {
-      perror("failed to receive");
-      return EXIT_FAILURE;
+int receive_all(int sockfd, char **buf) {
+  size_t buf_size = INITIAL_BUF_SIZE;
+  size_t total_received = 0;
+  ssize_t received;
+  char tmp_buf[512];
+
+  *buf = malloc(buf_size);
+  if (*buf == NULL) {
+    perror("failed to allocate buf");
+    return -1;
+  }
+  while (1) {
+    received = recv(sockfd, tmp_buf, sizeof(tmp_buf) - 1, 0);
+    if (received == -1) {
+      perror("recv failed");
+      free(*buf);
+      return -1;
     }
-    if (n == 0) {
-      fprintf(stderr, "EOF\n");
-      break;
+    tmp_buf[received] = '\0';
+    // Double the buffer size when it is full
+    // to leave space for the null terminator
+    if (total_received + received >= buf_size) {
+      buf_size *= 2;
+      char *new_buf = realloc(*buf, buf_size);
+      if (new_buf == NULL) {
+        perror("failed to reallocate buf");
+        free(*buf);
+        return -1;
+      }
+      *buf = new_buf;
     }
-    received += n;
-    if (strstr(buf, "\r\n\r\n") != NULL) {
+    memcpy(*buf + total_received, tmp_buf, received);
+    total_received += received;
+    if (strstr(*buf, "\r\n\r\n") != NULL) {
       break;
     }
   }
-  return received;
+  (*buf)[total_received] = '\0';
+  return total_received;
 }

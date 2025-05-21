@@ -31,4 +31,10 @@ $(SERVERBIN): $(SERVERSRCS) $(COMMONSRCS)
 clean:
 	@rm -rf $(CLIENTBIN) $(CMDBIN) $(SERVERBIN)
 
-.PHONY: all clean
+runs:
+	@$(SERVERBIN)
+
+runc:
+	@$(CLIENTBIN)
+
+.PHONY: all clean runs runc
